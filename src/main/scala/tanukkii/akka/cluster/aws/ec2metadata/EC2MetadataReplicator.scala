@@ -5,7 +5,11 @@ import akka.actor.{Props, Actor}
 private[ec2metadata] class EC2MetadataReplicator(settings: EC2MetadataReplicationSettings) extends Actor {
   import EC2MetadataReplicator._
 
-  def fetcherProps = EC2MetadataFetcher.props(self, settings.ec2MetadataFetchRetryInterval)
+  def fetcherProps = if (settings.instanceInfoFromConfig) {
+    EC2MetadataConfigFetcher.props(self)
+  } else {
+    EC2MetadataFetcher.props(self, settings.ec2MetadataFetchRetryInterval)
+  }
 
   val ec2MetadataFetcher = context.actorOf(fetcherProps, "ec2-metadata-fetcher")
 
